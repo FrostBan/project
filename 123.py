@@ -18,7 +18,6 @@ class Attributes:
     def increase_experience(self, amount):
         self.experience += amount
         print(f"Отримано досвіду: {amount}")
-        # Підвищення рівня
         if self.experience >= self.level * 100:
             self.experience = 0
             self.level += 1
@@ -123,20 +122,16 @@ class Work:
             print("Здоров'я зменшено через низьку енергію!")
 
 
-# Створення персонажів
 ann = Character('Ann', 20)
 ann.set_skills(0.2, 0.1, 0.2, 0.0)
 ann.inventory.add_item("Енергетичний напій")
 
-# Завдання
 task1 = Work("Розробка дизайну", math_reward=0.1, lang_reward=0.2, diz_reward=0.3, lead_reward=0, exp_reward=50, energy_cost=20)
 
-# Виконання завдання
 ann.get()
 task1.complete_work(ann)
 ann.get()
 
-# Збереження та завантаження стану
 ann.save_state()
 loaded_ann = Character.load_state()
 loaded_ann.get()
