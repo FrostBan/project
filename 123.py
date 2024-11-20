@@ -1,75 +1,14 @@
-import pickle
+import json  
 
-# Клас для атрибутів персонажа: здоров'я, енергія, досвід та рівень
-class Attributes:
-    def __init__(self, health=100, energy=100, experience=0, level=1):
-        self.health = health      # Здоров'я персонажа
-        self.energy = energy      # Енергія персонажа
-        self.experience = experience  # Досвід персонажа
-        self.level = level        # Поточний рівень персонажа
-
-    # Метод для виведення поточних атрибутів персонажа
-    def display(self):
-        print(f"Здоров'я: {self.health}, Енергія: {self.energy}, Досвід: {self.experience}, Рівень: {self.level}")
-
-    # Зменшує здоров'я на задану кількість, не допускаючи значень нижче 0
-    def reduce_health(self, amount):
-        self.health -= amount
-        if self.health < 0:
-            self.health = 0
-
-    # Збільшує досвід персонажа, підвищуючи рівень, коли досвід досягає порогу
-    def increase_experience(self, amount):
-        self.experience += amount
-        print(f"Отримано досвіду: {amount}")
-        # Перевірка для підвищення рівня
-        if self.experience >= self.level * 100:
-            self.experience = 0    # Обнулення досвіду після підвищення рівня
-            self.level += 1
-            print(f"Вітаємо! {self.level} рівень досягнуто!")
-
-    # Зменшує енергію на задану кількість, не допускаючи значень нижче 0
-    def reduce_energy(self, amount):
-        self.energy -= amount
-        if self.energy < 0:
-            self.energy = 0
-
-    # Відпочинок для відновлення енергії та здоров'я
-    def rest(self):
-        self.energy += 30
-        self.health += 5
-        if self.health > 100:
-            self.health = 100
-        if self.energy > 100:
-            self.energy = 100
-
-
-# Клас інвентаря для зберігання предметів персонажа
-class Inventory:
-    def __init__(self):
-        self.items = []  # Список предметів в інвентарі
-
-    # Додає новий предмет до інвентаря
-    def add_item(self, item):
-        self.items.append(item)
-        print(f"Додано до інвентаря: {item}")
-
-    # Виводить вміст інвентаря
-    def show_inventory(self):
-        print("Інвентар:", ", ".join(self.items) if self.items else "Порожній")
-
-
-# Основний клас персонажа
+# Клас для опису персонажа
 class Character:
     def __init__(self, name, age):
-        self.name = name
-        self.age = age
-        self.math = 0  # Навички з математики
-        self.lang = 0  # Навички з англійської мови
-        self.diz = 0   # Дизайнерські навички
-        self.lead = 0  # Лідерські якості
-        self.attributes = Attributes()  # Об'єкт атрибутів (здоров'я, енергія, досвід)
-        self.inventory = Inventory()    # Об'єкт інвентаря
+        self.name = name  # Ім'я персонажа
+        self.age = age  # Вік персонажа
+        self.math = 0  # Навички: Математика
+        self.lang = 0  # Навички: Мова
+        self.diz = 0  # Навички: Дизайн
+        self.lead = 0  # Навички: Лідерство
 
     # Метод для встановлення початкових навичок
     def set_skills(self, math, lang, diz, lead):
@@ -78,14 +17,12 @@ class Character:
         self.diz = diz
         self.lead = lead
 
-    # Метод для виведення інформації про персонажа, включаючи навички, атрибути та інвентар
+    # Метод для отримання інформації про персонажа
     def get(self):
-        print(f"Персонаж {self.name}, в віці {self.age}")
-        print(f"Математичні скіли: {self.math}, Англійська: {self.lang}, Дизайн: {self.diz}, Лідерські якості: {self.lead}")
-        self.attributes.display()
-        self.inventory.show_inventory()
+        print(f"Персонаж {self.name}, вік: {self.age}")
+        print(f"Навички -> Математика: {self.math}, Мова: {self.lang}, Дизайн: {self.diz}, Лідерство: {self.lead}")
 
-    # Метод для підвищення навичок після виконання завдання
+    # Метод для покращення навичок персонажа
     def skill_high(self, math_high, lang_high, diz_high, lead_high):
         if math_high != 0:
             self.math += math_high
@@ -100,62 +37,89 @@ class Character:
             self.lead += lead_high
             print(f"Лідерські якості покращено на: {lead_high}")
 
-    # Метод для збереження стану персонажа у файл
-    def save_state(self, filename='character_state.pkl'):
-        with open(filename, 'wb') as file:
-            pickle.dump(self, file)
-        print("Стан гри збережено.")
 
-    # Метод для завантаження стану персонажа з файлу
+# Клас для опису статусу персонажа (здоров'я, енергія, досвід)
+class Status:
+    def __init__(self):
+        self.health = 100  # Здоров'я персонажа
+        self.energy = 100  # Енергія персонажа
+        self.experience = 0  # Досвід персонажа
+
+    # Метод для отримання поточного статусу
+    def get_status(self):
+        return {"health": self.health, "energy": self.energy, "experience": self.experience}
+
+    # Метод для зміни статусу
+    def change_status(self, health_change=0, energy_change=0, experience_change=0):
+        self.health += health_change
+        self.energy += energy_change
+        self.experience += experience_change
+
+
+# Клас для збереження та завантаження гри
+class GameSave:
     @staticmethod
-    def load_state(filename='character_state.pkl'):
-        with open(filename, 'rb') as file:
-            character = pickle.load(file)
-        print("Стан гри завантажено.")
-        return character
+    def save_game(character, status, filename="save.json"):
+        # Підготовка даних для збереження
+        data = {
+            "character": {
+                "name": character.name,
+                "age": character.age,
+                "skills": {
+                    "math": character.math,
+                    "lang": character.lang,
+                    "diz": character.diz,
+                    "lead": character.lead,
+                },
+            },
+            "status": status.get_status(),
+        }
+
+        # Збереження у файл JSON
+        with open(filename, "w") as save_file:
+            json.dump(data, save_file, indent=4)
+        print(f"Гра збережена у файл {filename}.")
+
+    @staticmethod
+    def load_game(filename="save.json"):
+        try:
+            # Завантаження даних із файлу JSON
+            with open(filename, "r") as save_file:
+                data = json.load(save_file)
+
+            # Створення об'єктів Character і Status із завантажених даних
+            character = Character(data["character"]["name"], data["character"]["age"])
+            character.set_skills(
+                data["character"]["skills"]["math"],
+                data["character"]["skills"]["lang"],
+                data["character"]["skills"]["diz"],
+                data["character"]["skills"]["lead"],
+            )
+
+            status = Status()
+            status.health = data["status"]["health"]
+            status.energy = data["status"]["energy"]
+            status.experience = data["status"]["experience"]
+
+            print("Гра завантажена успішно.")
+            return character, status
+        except FileNotFoundError:
+            print("Файл збереження не знайдено.")
+            return None, None
 
 
-# Клас завдань для виконання, яке дає винагороду і витрачає енергію
-class Work:
-    def __init__(self, work_type, math_reward=0, lang_reward=0, diz_reward=0, lead_reward=0, exp_reward=0, energy_cost=10):
-        self.work_type = work_type        # Тип завдання
-        self.math_reward = math_reward    # Бонус до математики за виконання
-        self.lang_reward = lang_reward    # Бонус до англійської
-        self.diz_reward = diz_reward      # Бонус до дизайну
-        self.lead_reward = lead_reward    # Бонус до лідерських якостей
-        self.exp_reward = exp_reward      # Кількість досвіду, що надається
-        self.energy_cost = energy_cost    # Витрати енергії
+# Приклад використання
+Ann = Character("Ann", 20)
+Ann.set_skills(0.2, 0.1, 0.2, 0.0)
 
-    # Метод для виконання завдання персонажем
-    def complete_work(self, character):
-        print(f"Виконується завдання типу: {self.work_type}")
-        
-        # Перевірка, чи достатньо енергії для виконання завдання
-        if character.attributes.energy >= self.energy_cost:
-            character.attributes.reduce_energy(self.energy_cost)
-            character.skill_high(self.math_reward, self.lang_reward, self.diz_reward, self.lead_reward)
-            character.attributes.increase_experience(self.exp_reward)
-        else:
-            # Якщо енергії недостатньо, здоров'я персонажа знижується
-            print("Недостатньо енергії для виконання завдання.")
-            character.attributes.reduce_health(10)
-            print("Здоров'я зменшено через низьку енергію!")
+status = Status()
 
+# Збереження гри
+GameSave.save_game(Ann, status)
 
-# Створення персонажів
-ann = Character('Ann', 20)
-ann.set_skills(0.2, 0.1, 0.2, 0.0)  # Початкові навички персонажа
-ann.inventory.add_item("Енергетичний напій")  # Додавання предмету в інвентар
+# Завантаження гри
+loaded_character, loaded_status = GameSave.load_game()
 
-# Створення завдання
-task1 = Work("Розробка дизайну", math_reward=0.1, lang_reward=0.2, diz_reward=0.3, lead_reward=0, exp_reward=50, energy_cost=20)
-
-# Виконання завдання та оновлення атрибутів
-ann.get()
-task1.complete_work(ann)
-ann.get()
-
-# Збереження стану персонажа у файл та його завантаження
-ann.save_state()
-loaded_ann = Character.load_state()
-loaded_ann.get()
+if loaded_character:
+    loaded_character.get()
+    print("Статус після завантаження:", loaded_status.get_status())
